@@ -1,20 +1,8 @@
-From de263378742506247f5947c7b7dc69a1993708d5 Mon Sep 17 00:00:00 2001
-From: Reini Urban <rurban@cpan.org>
-Date: Tue, 26 Feb 2019 14:20:08 +0100
-Subject: [PATCH] advcpmv-0.8-8.30-72-ga5202bd585.patch
-
----
- doc/coreutils.texi                            |  12 +
- src/copy.c                                    | 247 ++++++-
- src/copy.h                                    |  12 +
- src/cp.c                                      | 111 ++-
- src/mv.c                                      |  81 ++-
-
 diff --git doc/coreutils.texi doc/coreutils.texi
-index 10fd023d8..77700273d 100644
+index eb1848882..670ed18d6 100644
 --- doc/coreutils.texi
 +++ doc/coreutils.texi
-@@ -8552,6 +8552,12 @@ This option is independent of the @option{--interactive} or
+@@ -8693,6 +8693,12 @@ This option is independent of the @option{--interactive} or
  This option is ignored when the @option{--no-clobber} or @option{-n} option
  is also used.
  
@@ -27,7 +15,7 @@ index 10fd023d8..77700273d 100644
  @item -H
  @opindex -H
  If a command line argument specifies a symbolic link, then copy the
-@@ -9665,6 +9671,12 @@ options, only the final one takes effect.
+@@ -9806,6 +9812,12 @@ options, only the final one takes effect.
  @end macro
  @mvOptsIfn
  
@@ -41,7 +29,7 @@ index 10fd023d8..77700273d 100644
  @itemx --interactive
  @opindex -i
 diff --git src/copy.c src/copy.c
-index 58d2f6eb6..075e31804 100644
+index dc1f6d0fa..0b11872e6 100644
 --- src/copy.c
 +++ src/copy.c
 @@ -129,6 +129,65 @@ struct dir_list
@@ -366,7 +354,7 @@ index 58d2f6eb6..075e31804 100644
  
  preserve_metadata:
 diff --git src/copy.h src/copy.h
-index c7fdcffbe..65c67dbcf 100644
+index 7d2303c54..9fd108b26 100644
 --- src/copy.h
 +++ src/copy.h
 @@ -234,6 +234,9 @@ struct cp_options
@@ -394,7 +382,7 @@ index c7fdcffbe..65c67dbcf 100644
 +
  #endif
 diff --git src/cp.c src/cp.c
-index 21dd4441b..956946ae8 100644
+index 707f3984a..7fbe05813 100644
 --- src/cp.c
 +++ src/cp.c
 @@ -131,6 +131,7 @@ static struct option const long_opts[] =
@@ -409,7 +397,7 @@ index 21dd4441b..956946ae8 100644
    -f, --force                  if an existing destination file cannot be\n\
                                   opened, remove it and try again (this option\n\
                                   is ignored when the -n option is also used)\n\
-+  -g, --progress-bar           display a progress bar\n\
++  -g, --progress-bar           add a progress bar\n\
    -i, --interactive            prompt before overwrite (overrides a previous -n\
  \n\
                                    option)\n\
@@ -558,7 +546,7 @@ index 21dd4441b..956946ae8 100644
            x.dereference = DEREF_COMMAND_LINE_ARGUMENTS;
            break;
 diff --git src/mv.c src/mv.c
-index b6dd72d67..1b4c9dc7d 100644
+index d1dd1d224..03aa82449 100644
 --- src/mv.c
 +++ src/mv.c
 @@ -66,6 +66,7 @@ static struct option const long_options[] =
@@ -681,6 +669,3 @@ index b6dd72d67..1b4c9dc7d 100644
          case 'S':
            make_backups = true;
            backup_suffix = optarg;
--- 
-2.20.1
-

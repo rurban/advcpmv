@@ -1,20 +1,8 @@
-From de263378742506247f5947c7b7dc69a1993708d5 Mon Sep 17 00:00:00 2001
-From: Reini Urban <rurban@cpan.org>
-Date: Tue, 26 Feb 2019 14:20:08 +0100
-Subject: [PATCH] advcpmv-0.8-8.30-72-ga5202bd585.patch
-
----
- doc/coreutils.texi                            |  12 +
- src/copy.c                                    | 247 ++++++-
- src/copy.h                                    |  12 +
- src/cp.c                                      | 111 ++-
- src/mv.c                                      |  81 ++-
-
 diff --git doc/coreutils.texi doc/coreutils.texi
-index 10fd023d8..77700273d 100644
+index de1f2eb36..82af6768a 100644
 --- doc/coreutils.texi
 +++ doc/coreutils.texi
-@@ -8552,6 +8552,12 @@ This option is independent of the @option{--interactive} or
+@@ -8535,6 +8535,12 @@ This option is independent of the @option{--interactive} or
  This option is ignored when the @option{--no-clobber} or @option{-n} option
  is also used.
  
@@ -27,7 +15,7 @@ index 10fd023d8..77700273d 100644
  @item -H
  @opindex -H
  If a command line argument specifies a symbolic link, then copy the
-@@ -9665,6 +9671,12 @@ options, only the final one takes effect.
+@@ -9642,6 +9648,12 @@ options, only the final one takes effect.
  @end macro
  @mvOptsIfn
  
@@ -41,10 +29,10 @@ index 10fd023d8..77700273d 100644
  @itemx --interactive
  @opindex -i
 diff --git src/copy.c src/copy.c
-index 58d2f6eb6..075e31804 100644
+index 165c5cebb..46897aa92 100644
 --- src/copy.c
 +++ src/copy.c
-@@ -129,6 +129,65 @@ struct dir_list
+@@ -128,6 +128,65 @@ struct dir_list
    dev_t dev;
  };
  
@@ -110,7 +98,7 @@ index 58d2f6eb6..075e31804 100644
  /* Initial size of the cp.dest_info hash table.  */
  #define DEST_INFO_INITIAL_CAPACITY 61
  
-@@ -225,7 +284,8 @@ sparse_copy (int src_fd, int dest_fd, char *buf, size_t buf_size,
+@@ -224,7 +283,8 @@ sparse_copy (int src_fd, int dest_fd, char *buf, size_t buf_size,
               size_t hole_size, bool punch_holes,
               char const *src_name, char const *dst_name,
               uintmax_t max_n_read, off_t *total_n_read,
@@ -120,7 +108,7 @@ index 58d2f6eb6..075e31804 100644
  {
    *last_write_made_hole = false;
    *total_n_read = 0;
-@@ -234,6 +294,85 @@ sparse_copy (int src_fd, int dest_fd, char *buf, size_t buf_size,
+@@ -233,6 +293,85 @@ sparse_copy (int src_fd, int dest_fd, char *buf, size_t buf_size,
  
    while (max_n_read)
      {
@@ -206,7 +194,7 @@ index 58d2f6eb6..075e31804 100644
        ssize_t n_read = read (src_fd, buf, MIN (max_n_read, buf_size));
        if (n_read < 0)
          {
-@@ -320,6 +459,13 @@ sparse_copy (int src_fd, int dest_fd, char *buf, size_t buf_size,
+@@ -319,6 +458,13 @@ sparse_copy (int src_fd, int dest_fd, char *buf, size_t buf_size,
           certain files in /proc or /sys with linux kernels.  */
      }
  
@@ -220,7 +208,7 @@ index 58d2f6eb6..075e31804 100644
    /* Ensure a trailing hole is created, so that subsequent
       calls of sparse_copy() start at the correct offset.  */
    if (make_hole && ! create_hole (dest_fd, dst_name, punch_holes, psize))
-@@ -388,7 +534,9 @@ extent_copy (int src_fd, int dest_fd, char *buf, size_t buf_size,
+@@ -387,7 +533,9 @@ extent_copy (int src_fd, int dest_fd, char *buf, size_t buf_size,
               size_t hole_size, off_t src_total_size,
               enum Sparse_type sparse_mode,
               char const *src_name, char const *dst_name,
@@ -231,7 +219,7 @@ index 58d2f6eb6..075e31804 100644
  {
    struct extent_scan scan;
    off_t last_ext_start = 0;
-@@ -519,10 +667,18 @@ extent_copy (int src_fd, int dest_fd, char *buf, size_t buf_size,
+@@ -518,10 +666,18 @@ extent_copy (int src_fd, int dest_fd, char *buf, size_t buf_size,
                last_ext_len = ext_len;
                bool read_hole;
  
@@ -254,7 +242,7 @@ index 58d2f6eb6..075e31804 100644
                  goto fail;
  
                dest_pos = ext_start + n_read;
-@@ -1271,6 +1427,70 @@ copy_reg (char const *src_name, char const *dst_name,
+@@ -1270,6 +1426,70 @@ copy_reg (char const *src_name, char const *dst_name,
        buf_alloc = xmalloc (buf_size + buf_alignment);
        buf = ptr_align (buf_alloc, buf_alignment);
  
@@ -325,7 +313,7 @@ index 58d2f6eb6..075e31804 100644
        if (sparse_src)
          {
            bool normal_copy_required;
-@@ -1282,7 +1502,9 @@ copy_reg (char const *src_name, char const *dst_name,
+@@ -1281,7 +1501,9 @@ copy_reg (char const *src_name, char const *dst_name,
            if (extent_copy (source_desc, dest_desc, buf, buf_size, hole_size,
                             src_open_sb.st_size,
                             make_holes ? x->sparse_mode : SPARSE_NEVER,
@@ -336,7 +324,7 @@ index 58d2f6eb6..075e31804 100644
              goto preserve_metadata;
  
            if (! normal_copy_required)
-@@ -1294,11 +1516,13 @@ copy_reg (char const *src_name, char const *dst_name,
+@@ -1293,11 +1515,13 @@ copy_reg (char const *src_name, char const *dst_name,
  
        off_t n_read;
        bool wrote_hole_at_eof;
@@ -351,7 +339,7 @@ index 58d2f6eb6..075e31804 100644
          {
            return_val = false;
            goto close_src_and_dst_desc;
-@@ -1309,6 +1533,13 @@ copy_reg (char const *src_name, char const *dst_name,
+@@ -1308,6 +1532,13 @@ copy_reg (char const *src_name, char const *dst_name,
            return_val = false;
            goto close_src_and_dst_desc;
          }
@@ -366,7 +354,7 @@ index 58d2f6eb6..075e31804 100644
  
  preserve_metadata:
 diff --git src/copy.h src/copy.h
-index c7fdcffbe..65c67dbcf 100644
+index eef5663b4..a461dd074 100644
 --- src/copy.h
 +++ src/copy.h
 @@ -234,6 +234,9 @@ struct cp_options
@@ -379,7 +367,7 @@ index c7fdcffbe..65c67dbcf 100644
    /* If true, do not copy a nondirectory that has an existing destination
       with the same or newer modification time. */
    bool update;
-@@ -309,4 +312,13 @@ void cp_options_default (struct cp_options *);
+@@ -300,4 +303,13 @@ void cp_options_default (struct cp_options *);
  bool chown_failure_ok (struct cp_options const *) _GL_ATTRIBUTE_PURE;
  mode_t cached_umask (void);
  
@@ -394,10 +382,10 @@ index c7fdcffbe..65c67dbcf 100644
 +
  #endif
 diff --git src/cp.c src/cp.c
-index 21dd4441b..956946ae8 100644
+index 6743f1036..a04f58c42 100644
 --- src/cp.c
 +++ src/cp.c
-@@ -131,6 +131,7 @@ static struct option const long_opts[] =
+@@ -141,6 +141,7 @@ static struct option const long_opts[] =
    {"symbolic-link", no_argument, NULL, 's'},
    {"target-directory", required_argument, NULL, 't'},
    {"update", no_argument, NULL, 'u'},
@@ -405,15 +393,15 @@ index 21dd4441b..956946ae8 100644
    {"verbose", no_argument, NULL, 'v'},
    {GETOPT_SELINUX_CONTEXT_OPTION_DECL},
    {GETOPT_HELP_OPTION_DECL},
-@@ -170,6 +171,7 @@ Copy SOURCE to DEST, or multiple SOURCE(s) to DIRECTORY.\n\
+@@ -180,6 +181,7 @@ Copy SOURCE to DEST, or multiple SOURCE(s) to DIRECTORY.\n\
    -f, --force                  if an existing destination file cannot be\n\
                                   opened, remove it and try again (this option\n\
                                   is ignored when the -n option is also used)\n\
-+  -g, --progress-bar           display a progress bar\n\
++  -g, --progress-bar           add a progress bar\n\
    -i, --interactive            prompt before overwrite (overrides a previous -n\
  \n\
                                    option)\n\
-@@ -636,6 +638,68 @@ do_copy (int n_files, char **file, const char *target_directory,
+@@ -635,6 +637,68 @@ do_copy (int n_files, char **file, const char *target_directory,
               quoteaf (file[n_files - 1]));
      }
  
@@ -482,7 +470,7 @@ index 21dd4441b..956946ae8 100644
    if (target_directory)
      {
        /* cp file1...filen edir
-@@ -777,6 +841,46 @@ do_copy (int n_files, char **file, const char *target_directory,
+@@ -776,6 +840,46 @@ do_copy (int n_files, char **file, const char *target_directory,
        ok = copy (source, new_dest, 0, x, &unused, NULL);
      }
  
@@ -529,7 +517,7 @@ index 21dd4441b..956946ae8 100644
    return ok;
  }
  
-@@ -812,6 +916,7 @@ cp_option_init (struct cp_options *x)
+@@ -811,6 +915,7 @@ cp_option_init (struct cp_options *x)
    x->recursive = false;
    x->sparse_mode = SPARSE_AUTO;
    x->symbolic_link = false;
@@ -537,7 +525,7 @@ index 21dd4441b..956946ae8 100644
    x->set_mode = false;
    x->mode = 0;
  
-@@ -950,7 +1055,7 @@ main (int argc, char **argv)
+@@ -949,7 +1054,7 @@ main (int argc, char **argv)
    selinux_enabled = (0 < is_selinux_enabled ());
    cp_option_init (&x);
  
@@ -546,7 +534,7 @@ index 21dd4441b..956946ae8 100644
                             long_opts, NULL))
           != -1)
      {
-@@ -1007,6 +1112,10 @@ main (int argc, char **argv)
+@@ -1006,6 +1111,10 @@ main (int argc, char **argv)
            x.unlink_dest_after_failed_open = true;
            break;
  
@@ -558,10 +546,10 @@ index 21dd4441b..956946ae8 100644
            x.dereference = DEREF_COMMAND_LINE_ARGUMENTS;
            break;
 diff --git src/mv.c src/mv.c
-index b6dd72d67..1b4c9dc7d 100644
+index 9e80193df..cd83f8332 100644
 --- src/mv.c
 +++ src/mv.c
-@@ -66,6 +66,7 @@ static struct option const long_options[] =
+@@ -65,6 +65,7 @@ static struct option const long_options[] =
    {"target-directory", required_argument, NULL, 't'},
    {"update", no_argument, NULL, 'u'},
    {"verbose", no_argument, NULL, 'v'},
@@ -569,7 +557,7 @@ index b6dd72d67..1b4c9dc7d 100644
    {GETOPT_HELP_OPTION_DECL},
    {GETOPT_VERSION_OPTION_DECL},
    {NULL, 0, NULL, 0}
-@@ -168,10 +169,82 @@ target_directory_operand (char const *file)
+@@ -165,10 +166,82 @@ target_directory_operand (char const *file)
  static bool
  do_move (const char *source, const char *dest, const struct cp_options *x)
  {
@@ -652,7 +640,7 @@ index b6dd72d67..1b4c9dc7d 100644
    if (ok)
      {
        char const *dir_to_remove;
-@@ -306,6 +379,7 @@ Rename SOURCE to DEST, or move SOURCE(s) to DIRECTORY.\n\
+@@ -303,6 +376,7 @@ Rename SOURCE to DEST, or move SOURCE(s) to DIRECTORY.\n\
  \n\
    -b                           like --backup but does not accept an argument\n\
    -f, --force                  do not prompt before overwriting\n\
@@ -660,7 +648,7 @@ index b6dd72d67..1b4c9dc7d 100644
    -i, --interactive            prompt before overwrite\n\
    -n, --no-clobber             do not overwrite an existing file\n\
  If you specify more than one of -i, -f, -n, only the final one takes effect.\n\
-@@ -361,7 +435,7 @@ main (int argc, char **argv)
+@@ -358,7 +432,7 @@ main (int argc, char **argv)
    /* Try to disable the ability to unlink a directory.  */
    priv_set_remove_linkdir ();
  
@@ -669,7 +657,7 @@ index b6dd72d67..1b4c9dc7d 100644
           != -1)
      {
        switch (c)
-@@ -407,6 +481,11 @@ main (int argc, char **argv)
+@@ -404,6 +478,11 @@ main (int argc, char **argv)
          case 'v':
            x.verbose = true;
            break;
@@ -681,6 +669,3 @@ index b6dd72d67..1b4c9dc7d 100644
          case 'S':
            make_backups = true;
            backup_suffix = optarg;
--- 
-2.20.1
-
