@@ -1,4 +1,4 @@
-# Make coreutils documentation.				-*-Makefile-*-
+# Make advcpmv documentation.				-*-Makefile-*-
 # This is included by the top-level Makefile.am.
 
 # Copyright (C) 1995-2019 Free Software Foundation, Inc.
@@ -16,11 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-info_TEXINFOS = doc/coreutils.texi
+info_TEXINFOS = doc/advcpmv.texi
 
-doc_coreutils_TEXINFOS = \
-  doc/perm.texi \
-  doc/parse-datetime.texi \
+doc_advcpmv_TEXINFOS = \
   doc/constants.texi \
   doc/fdl.texi
 

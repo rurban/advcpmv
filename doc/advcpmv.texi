@@ -1,0 +1,1803 @@
+\input texinfo
+@c %**start of header
+@setfilename advcpmv.info
+@settitle GNU Advanced cp/mv
+@documentencoding UTF-8
+@allowcodebreaks false
+
+@c %**end of header
+
+@include version.texi
+@include constants.texi
+
+@c Define new indices.
+@defcodeindex op
+@defcodeindex fl
+
+@c Put everything in one index (arbitrarily chosen to be the concept index).
+@syncodeindex fl cp
+@syncodeindex fn cp
+@syncodeindex ky cp
+@syncodeindex op cp
+@syncodeindex pg cp
+@syncodeindex vr cp
+
+@dircategory Basics
+@direntry
+* Advcpmv: (advcpmv).       GNU Advanced cp/mv utilities.
+* Common options: (advcpmv)Common options.
+* File permissions: (advcpmv)File permissions.  Access modes.
+@end direntry
+
+@c FIXME: the following need documentation
+@c * [: (advcpmv)[ invocation.                   File/string tests.
+@c * pinky: (advcpmv)pinky invocation.           FIXME.
+
+@dircategory Individual utilities
+@direntry
+* cp: (advcpmv)cp invocation.                 Copy files.
+* mv: (advcpmv)mv invocation.                 Rename files.
+@end direntry
+
+@copying
+This manual documents version @value{VERSION} of the GNU advmvcp
+utilities, enhancing cp and mv with a -g progressbar.
+
+Copyright @copyright{} 1994-2019 Free Software Foundation, Inc.
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+Texts.  A copy of the license is included in the section entitled ``GNU
+Free Documentation License''.
+@end quotation
+@end copying
+
+@titlepage
+@title GNU @code{advcpmv}
+@subtitle GNU Advanced cp/mv utilities
+@subtitle for version @value{VERSION}, @value{UPDATED}
+@author Reini Urban et al.
+
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+@shortcontents
+@contents
+
+@ifnottex
+@node Top
+@top GNU Advanced cp/mv utilities
+
+@insertcopying
+@end ifnottex
+
+@cindex file utilities
+
+@menu
+* Introduction::                 Caveats, overview, and authors
+* Common options::               Common options
+* Basic operations::             cp mv
+* File permissions::             Access modes
+* File timestamps::              File timestamp issues
+* GNU Free Documentation License:: Copying and sharing this manual
+* Concept index::                General index
+
+@detailmenu
+ --- The Detailed Node Listing ---
+
+Common Options
+
+* Exit status::                  Indicating program success or failure
+* Backup options::               Backup options
+* Block size::                   Block size
+* Floating point::               Floating point number representation
+* Signal specifications::        Specifying signals
+* Disambiguating names and IDs:: chgrp, chown, chroot, id: user and group syntax
+* Random sources::               Sources of random data
+* Target directory::             Target directory
+* Trailing slashes::             Trailing slashes
+* Traversing symlinks::          Traversing symlinks to directories
+* Treating / specially::         Treating / specially
+* Standards conformance::        Standards conformance
+* Multi-call invocation::        Multi-call program invocation
+
+Basic operations
+
+* cp invocation::                Copy files and directories
+* mv invocation::                Move (rename) files
+
+File timestamps
+
+* File timestamps::              File timestamp issues
+
+File permissions
+
+* Mode Structure::               Structure of file mode bits
+* Symbolic Modes::               Mnemonic representation of file mode bits
+* Numeric Modes::                File mode bits as octal numbers
+* Directory Setuid and Setgid::  Set-user-ID and set-group-ID on directories
+
+Copying This Manual
+
+* GNU Free Documentation License::     Copying and sharing this manual
+
+@end detailmenu
+@end menu
+
+
+@node Introduction
+@chapter Introduction
+
+This manual is a work in progress: many sections make no attempt to explain
+basic concepts in a way suitable for novices.  Thus, if you are interested,
+please get involved in improving this manual.  The entire GNU community
+will benefit.
+
+@cindex POSIX
+The GNU utilities documented here are mostly compatible with the
+POSIX standard.
+@cindex bugs, reporting
+
+Please report bugs to @email{bug-coreutils@@gnu.org}.
+Include the version number, machine architecture, input files, and
+any other information needed to reproduce the bug: your input, what you
+expected, what you got, and why it is wrong.
+
+If you have a problem with @command{sort} or @command{date}, try using the
+@option{--debug} option, as it can can often help find and fix problems without
+having to wait for an answer to a bug report.  If the debug output
+does not suffice to fix the problem on your own, please compress and
+attach it to the rest of your bug report.
+
+Although diffs are welcome,
+please include a description of the problem as well, since this is
+sometimes difficult to infer.  @xref{Bugs, , , gcc, Using and Porting GNU CC}.
+
+@cindex Berry, K.
+@cindex Paterson, R.
+@cindex Stallman, R.
+@cindex Pinard, F.
+@cindex MacKenzie, D.
+@cindex Meyering, J.
+@cindex Youmans, B.
+This manual was originally derived from the Unix man pages in the
+distributions, which were written by David MacKenzie and updated by Jim
+Meyering.  What you are reading now is the authoritative documentation
+for these utilities; the man pages are no longer being maintained.  The
+original @command{fmt} man page was written by Ross Paterson.  Fran@,{c}ois
+Pinard did the initial conversion to Texinfo format.  Karl Berry did the
+indexing, some reorganization, and editing of the results.  Brian
+Youmans of the Free Software Foundation office staff combined the
+manuals for textutils, fileutils, and sh-utils to produce the present
+omnibus manual.  Richard Stallman contributed his usual invaluable
+insights to the overall process.
+
+@node Common options
+@chapter Common options
+
+@macro optBackup
+@item -b
+@itemx --backup[=@var{method}]
+@opindex -b
+@opindex --backup
+@vindex VERSION_CONTROL
+@cindex backups, making
+@xref{Backup options}.
+Make a backup of each file that would otherwise be overwritten or removed.
+@end macro
+
+@macro optBackupSuffix
+@item -S @var{suffix}
+@itemx --suffix=@var{suffix}
+@opindex -S
+@opindex --suffix
+Append @var{suffix} to each backup file made with @option{-b}.
+@xref{Backup options}.
+@end macro
+
+@macro optTargetDirectory
+@item -t @var{directory}
+@itemx --target-directory=@var{directory}
+@opindex -t
+@opindex --target-directory
+@cindex target directory
+@cindex destination directory
+Specify the destination @var{directory}.
+@xref{Target directory}.
+@end macro
+
+@macro optNoTargetDirectory
+@item -T
+@itemx --no-target-directory
+@opindex -T
+@opindex --no-target-directory
+@cindex target directory
+@cindex destination directory
+Do not treat the last operand specially when it is a directory or a
+symbolic link to a directory.  @xref{Target directory}.
+@end macro
+
+@macro outputNUL
+@cindex output NUL-byte-terminated lines
+Output a zero byte (ASCII NUL) at the end of each line,
+rather than a newline.  This option enables other programs to parse the
+output even when that output would contain data with embedded newlines.
+@end macro
+
+@macro optNull
+@item -0
+@itemx --null
+@opindex -0
+@opindex --null
+@outputNUL
+@end macro
+
+@macro optZero
+@item -z
+@itemx --zero
+@opindex -z
+@opindex --zero
+@outputNUL
+@end macro
+
+@macro optZeroTerminated
+@item -z
+@itemx --zero-terminated
+@opindex -z
+@opindex --zero-terminated
+@cindex process zero-terminated items
+Delimit items with a zero byte rather than a newline (ASCII LF).
+I.e., treat input as items separated by ASCII NUL
+and terminate output items with ASCII NUL.
+This option can be useful in conjunction with @samp{perl -0} or
+@samp{find -print0} and @samp{xargs -0} which do the same in order to
+reliably handle arbitrary file names (even those containing blanks
+or other special characters).
+@end macro
+
+@macro optSi
+@item --si
+@opindex --si
+@cindex SI output
+Append an SI-style abbreviation to each size, such as @samp{M} for
+megabytes.  Powers of 1000 are used, not 1024; @samp{M} stands for
+1,000,000 bytes.  This option is equivalent to
+@option{--block-size=si}.  Use the @option{-h} or
+@option{--human-readable} option if
+you prefer powers of 1024.
+@end macro
+
+@macro optHumanReadable
+@item -h
+@itemx --human-readable
+@opindex -h
+@opindex --human-readable
+@cindex human-readable output
+Append a size letter to each size, such as @samp{M} for mebibytes.
+Powers of 1024 are used, not 1000; @samp{M} stands for 1,048,576 bytes.
+This option is equivalent to @option{--block-size=human-readable}.
+Use the @option{--si} option if you prefer powers of 1000.
+@end macro
+
+@macro optStripTrailingSlashes
+@item --strip-trailing-slashes
+@opindex --strip-trailing-slashes
+@cindex stripping trailing slashes
+Remove any trailing slashes from each @var{source} argument.
+@xref{Trailing slashes}.
+@end macro
+
+@macro mayConflictWithShellBuiltIn{cmd}
+@cindex conflicts with shell built-ins
+@cindex built-in shell commands, conflicts with
+Due to shell aliases and built-in @command{\cmd\} functions, using an
+unadorned @command{\cmd\} interactively or in a script may get you
+different functionality than that described here.  Invoke it via
+@command{env} (i.e., @code{env \cmd\ @dots{}}) to avoid interference
+from the shell.
+
+@end macro
+
+@macro multiplierSuffixes{varName}
+@var{\varName\} may be, or may be an integer optionally followed by,
+one of the following multiplicative suffixes:
+@example
+@samp{b}  =>            512 ("blocks")
+@samp{KB} =>           1000 (KiloBytes)
+@samp{K}  =>           1024 (KibiBytes)
+@samp{MB} =>      1000*1000 (MegaBytes)
+@samp{M}  =>      1024*1024 (MebiBytes)
+@samp{GB} => 1000*1000*1000 (GigaBytes)
+@samp{G}  => 1024*1024*1024 (GibiBytes)
+@end example
+and so on for @samp{T}, @samp{P}, @samp{E}, @samp{Z}, and @samp{Y}.
+Binary prefixes can be used, too: @samp{KiB}=@samp{K}, @samp{MiB}=@samp{M},
+and so on.
+@end macro
+
+@c FIXME: same as above, but no ``blocks'' line.
+@macro multiplierSuffixesNoBlocks{varName}
+@var{\varName\} may be, or may be an integer optionally followed by,
+one of the following multiplicative suffixes:
+@example
+@samp{KB} =>           1000 (KiloBytes)
+@samp{K}  =>           1024 (KibiBytes)
+@samp{MB} =>      1000*1000 (MegaBytes)
+@samp{M}  =>      1024*1024 (MebiBytes)
+@samp{GB} => 1000*1000*1000 (GigaBytes)
+@samp{G}  => 1024*1024*1024 (GibiBytes)
+@end example
+and so on for @samp{T}, @samp{P}, @samp{E}, @samp{Z}, and @samp{Y}.
+Binary prefixes can be used, too: @samp{KiB}=@samp{K}, @samp{MiB}=@samp{M},
+and so on.
+@end macro
+
+@cindex common options
+
+Certain options are available in all of these programs.  Rather than
+writing identical descriptions for each of the programs, they are
+described here.  (In fact, every GNU program accepts (or should accept)
+these options.)
+
+@vindex POSIXLY_CORRECT
+Normally options and operands can appear in any order, and programs act
+as if all the options appear before any operands.  For example,
+@samp{sort -r passwd -t :} acts like @samp{sort -r -t : passwd}, since
+@samp{:} is an option-argument of @option{-t}.  However, if the
+@env{POSIXLY_CORRECT} environment variable is set, options must appear
+before operands, unless otherwise specified for a particular command.
+
+A few programs can usefully have trailing operands with leading
+@samp{-}.  With such a program, options must precede operands even if
+@env{POSIXLY_CORRECT} is not set, and this fact is noted in the
+program description.  For example, the @command{env} command's options
+must appear before its operands, since in some cases the operands
+specify a command that itself contains options.
+
+Most programs that accept long options recognize unambiguous
+abbreviations of those options.  For example, @samp{rmdir
+--ignore-fail-on-non-empty} can be invoked as @samp{rmdir
+--ignore-fail} or even @samp{rmdir --i}.  Ambiguous options, such as
+@samp{ls --h}, are identified as such.
+
+Some of these programs recognize the @option{--help} and @option{--version}
+options only when one of them is the sole command line argument.  For
+these programs, abbreviations of the long options are not always recognized.
+
+@table @samp
+
+@item --help
+@opindex --help
+@cindex help, online
+Print a usage message listing all available options, then exit successfully.
+
+@item --version
+@opindex --version
+@cindex version number, finding
+Print the version number, then exit successfully.
+
+@item --
+@opindex --
+@cindex option delimiter
+Delimit the option list.  Later arguments, if any, are treated as
+operands even if they begin with @samp{-}.  For example, @samp{sort --
+-r} reads from the file named @file{-r}.
+
+@end table
+
+@cindex standard input
+@cindex standard output
+A single @samp{-} operand is not really an option, though it looks like one.  It
+stands for a file operand, and some tools treat it as standard input, or as
+standard output if that is clear from the context.  For example, @samp{sort -}
+reads from standard input, and is equivalent to plain @samp{sort}.  Unless
+otherwise specified, a @samp{-} can appear as any operand that requires a file
+name.
+
+@menu
+* Exit status::                 Indicating program success or failure.
+* Backup options::              -b -S, in some programs.
+* Block size::                  BLOCK_SIZE and --block-size, in some programs.
+* Floating point::              Floating point number representation.
+* Signal specifications::       Specifying signals using the --signal option.
+* Disambiguating names and IDs:: chgrp, chown, chroot, id: user and group syntax
+* Random sources::              --random-source, in some programs.
+* Target directory::            Specifying a target directory, in some programs.
+* Trailing slashes::            --strip-trailing-slashes, in some programs.
+* Traversing symlinks::         -H, -L, or -P, in some programs.
+* Treating / specially::        --preserve-root and --no-preserve-root.
+* Special built-in utilities::  @command{break}, @command{:}, @dots{}
+* Standards conformance::       Conformance to the POSIX standard.
+* Multi-call invocation::       Multi-call program invocation.
+@end menu
+
+
+@node Exit status
+@section Exit status
+
+@macro exitstatus
+An exit status of zero indicates success,
+and a nonzero value indicates failure.
+@end macro
+
+Nearly every command invocation yields an integral @dfn{exit status}
+that can be used to change how other commands work.
+For the vast majority of commands, an exit status of zero indicates
+success.  Failure is indicated by a nonzero value---typically
+@samp{1}, though it may differ on unusual platforms as POSIX
+requires only that it be nonzero.
+
+@node Backup options
+@section Backup options
+
+@cindex backup options
+
+Some GNU programs (at least @command{cp}  and @command{mv}) optionally
+make backups of files before writing new versions.
+These options control the details of these backups.  The options are also
+briefly mentioned in the descriptions of the particular programs.
+
+@table @samp
+
+@item -b
+@itemx --backup[=@var{method}]
+@opindex -b
+@opindex --backup
+@vindex VERSION_CONTROL
+@cindex backups, making
+Make a backup of each file that would otherwise be overwritten or removed.
+Without this option, the original versions are destroyed.
+Use @var{method} to determine the type of backups to make.
+When this option is used but @var{method} is not specified,
+then the value of the @env{VERSION_CONTROL}
+environment variable is used.  And if @env{VERSION_CONTROL} is not set,
+the default backup type is @samp{existing}.
+
+Note that the short form of this option, @option{-b} does not accept any
+argument.  Using @option{-b} is equivalent to using @option{--backup=existing}.
+
+@vindex version-control @r{Emacs variable}
+This option corresponds to the Emacs variable @samp{version-control};
+the values for @var{method} are the same as those used in Emacs.
+This option also accepts more descriptive names.
+The valid @var{method}s are (unique abbreviations are accepted):
+
+@table @samp
+@item none
+@itemx off
+@opindex none @r{backup method}
+Never make backups.
+
+@item numbered
+@itemx t
+@opindex numbered @r{backup method}
+Always make numbered backups.
+
+@item existing
+@itemx nil
+@opindex existing @r{backup method}
+Make numbered backups of files that already have them, simple backups
+of the others.
+
+@item simple
+@itemx never
+@opindex simple @r{backup method}
+Always make simple backups.  Please note @samp{never} is not to be
+confused with @samp{none}.
+
+@end table
+
+@item -S @var{suffix}
+@itemx --suffix=@var{suffix}
+@opindex -S
+@opindex --suffix
+@cindex backup suffix
+@vindex SIMPLE_BACKUP_SUFFIX
+Append @var{suffix} to each backup file made with @option{-b}.  If this
+option is not specified, the value of the @env{SIMPLE_BACKUP_SUFFIX}
+environment variable is used.  And if @env{SIMPLE_BACKUP_SUFFIX} is not
+set, the default is @samp{~}, just as in Emacs.
+
+@end table
+
+@node Block size
+@section Block size
+
+@cindex block size
+
+Some GNU programs (at least @command{df}, @command{du}, and
+@command{ls}) display sizes in ``blocks''.  You can adjust the block size
+and method of display to make sizes easier to read.  The block size
+used for display is independent of any file system block size.
+Fractional block counts are rounded up to the nearest integer.
+
+@opindex --block-size=@var{size}
+@vindex BLOCKSIZE
+@vindex BLOCK_SIZE
+@vindex DF_BLOCK_SIZE
+@vindex DU_BLOCK_SIZE
+@vindex LS_BLOCK_SIZE
+@vindex POSIXLY_CORRECT@r{, and block size}
+
+The default block size is chosen by examining the following environment
+variables in turn; the first one that is set determines the block size.
+
+@table @code
+
+@item DF_BLOCK_SIZE
+This specifies the default block size for the @command{df} command.
+Similarly, @env{DU_BLOCK_SIZE} specifies the default for @command{du} and
+@env{LS_BLOCK_SIZE} for @command{ls}.
+
+@item BLOCK_SIZE
+This specifies the default block size for all three commands, if the
+above command-specific environment variables are not set.
+
+@item BLOCKSIZE
+This specifies the default block size for all values that are normally
+printed as blocks, if neither @env{BLOCK_SIZE} nor the above
+command-specific environment variables are set.  Unlike the other
+environment variables, @env{BLOCKSIZE} does not affect values that are
+normally printed as byte counts, e.g., the file sizes contained in
+@code{ls -l} output.
+
+@item POSIXLY_CORRECT
+If neither @env{@var{command}_BLOCK_SIZE}, nor @env{BLOCK_SIZE}, nor
+@env{BLOCKSIZE} is set, but this variable is set, the block size
+defaults to 512.
+
+@end table
+
+If none of the above environment variables are set, the block size
+currently defaults to 1024 bytes in most contexts, but this number may
+change in the future.  For @command{ls} file sizes, the block size
+defaults to 1 byte.
+
+@cindex human-readable output
+@cindex SI output
+
+A block size specification can be a positive integer specifying the number
+of bytes per block, or it can be @code{human-readable} or @code{si} to
+select a human-readable format.  Integers may be followed by suffixes
+that are upward compatible with the
+@uref{http://www.bipm.org/en/publications/si-brochure/chapter3.html,
+SI prefixes}
+for decimal multiples and with the
+@uref{https://physics.nist.gov/cuu/Units/binary.html, ISO/IEC 80000-13
+(formerly IEC 60027-2) prefixes} for binary multiples.
+
+With human-readable formats, output sizes are followed by a size letter
+such as @samp{M} for megabytes.  @code{BLOCK_SIZE=human-readable} uses
+powers of 1024; @samp{M} stands for 1,048,576 bytes.
+@code{BLOCK_SIZE=si} is similar, but uses powers of 1000 and appends
+@samp{B}; @samp{MB} stands for 1,000,000 bytes.
+
+@vindex LC_NUMERIC
+A block size specification preceded by @samp{'} causes output sizes to
+be displayed with thousands separators.  The @env{LC_NUMERIC} locale
+specifies the thousands separator and grouping.  For example, in an
+American English locale, @samp{--block-size="'1kB"} would cause a size
+of 1234000 bytes to be displayed as @samp{1,234}.  In the default C
+locale, there is no thousands separator so a leading @samp{'} has no
+effect.
+
+An integer block size can be followed by a suffix to specify a
+multiple of that size.  A bare size letter,
+or one followed by @samp{iB}, specifies
+a multiple using powers of 1024.  A size letter followed by @samp{B}
+specifies powers of 1000 instead.  For example, @samp{1M} and
+@samp{1MiB} are equivalent to @samp{1048576}, whereas @samp{1MB} is
+equivalent to @samp{1000000}.
+
+A plain suffix without a preceding integer acts as if @samp{1} were
+prepended, except that it causes a size indication to be appended to
+the output.  For example, @samp{--block-size="kB"} displays 3000 as
+@samp{3kB}.
+
+The following suffixes are defined.  Large sizes like @code{1Y}
+may be rejected by your computer due to limitations of its arithmetic.
+
+@table @samp
+@item kB
+@cindex kilobyte, definition of
+kilobyte: @math{10^3 = 1000}.
+@item k
+@itemx K
+@itemx KiB
+@cindex kibibyte, definition of
+kibibyte: @math{2^{10} = 1024}.  @samp{K} is special: the SI prefix is
+@samp{k} and the ISO/IEC 80000-13 prefix is @samp{Ki}, but tradition and
+POSIX use @samp{k} to mean @samp{KiB}.
+@item MB
+@cindex megabyte, definition of
+megabyte: @math{10^6 = 1,000,000}.
+@item M
+@itemx MiB
+@cindex mebibyte, definition of
+mebibyte: @math{2^{20} = 1,048,576}.
+@item GB
+@cindex gigabyte, definition of
+gigabyte: @math{10^9 = 1,000,000,000}.
+@item G
+@itemx GiB
+@cindex gibibyte, definition of
+gibibyte: @math{2^{30} = 1,073,741,824}.
+@item TB
+@cindex terabyte, definition of
+terabyte:  @math{10^{12} = 1,000,000,000,000}.
+@item T
+@itemx TiB
+@cindex tebibyte, definition of
+tebibyte: @math{2^{40} = 1,099,511,627,776}.
+@item PB
+@cindex petabyte, definition of
+petabyte: @math{10^{15} = 1,000,000,000,000,000}.
+@item P
+@itemx PiB
+@cindex pebibyte, definition of
+pebibyte: @math{2^{50} = 1,125,899,906,842,624}.
+@item EB
+@cindex exabyte, definition of
+exabyte: @math{10^{18} = 1,000,000,000,000,000,000}.
+@item E
+@itemx EiB
+@cindex exbibyte, definition of
+exbibyte: @math{2^{60} = 1,152,921,504,606,846,976}.
+@item ZB
+@cindex zettabyte, definition of
+zettabyte: @math{10^{21} = 1,000,000,000,000,000,000,000}
+@item Z
+@itemx ZiB
+@math{2^{70} = 1,180,591,620,717,411,303,424}.
+@item YB
+@cindex yottabyte, definition of
+yottabyte: @math{10^{24} = 1,000,000,000,000,000,000,000,000}.
+@item Y
+@itemx YiB
+@math{2^{80} = 1,208,925,819,614,629,174,706,176}.
+@end table
+
+@opindex -k
+@opindex -h
+@opindex --block-size
+@opindex --human-readable
+@opindex --si
+
+Block size defaults can be overridden by an explicit
+@option{--block-size=@var{size}} option.  The @option{-k}
+option is equivalent to @option{--block-size=1K}, which
+is the default unless the @env{POSIXLY_CORRECT} environment variable is
+set.  The @option{-h} or @option{--human-readable} option is equivalent to
+@option{--block-size=human-readable}.  The @option{--si} option is
+equivalent to @option{--block-size=si}.  Note for @command{ls}
+the @option{-k} option does not control the display of the
+apparent file sizes, whereas the @option{--block-size} option does.
+
+@node Floating point
+@section Floating point numbers
+@cindex floating point
+@cindex IEEE floating point
+
+Commands that accept or produce floating point numbers employ the
+floating point representation of the underlying system, and suffer
+from rounding error, overflow, and similar floating-point issues.
+Almost all modern systems use IEEE-754 floating point, and it is
+typically portable to assume IEEE-754 behavior these days.  IEEE-754
+has positive and negative infinity, distinguishes positive from
+negative zero, and uses special values called NaNs to represent
+invalid computations such as dividing zero by itself.  For more
+information, please see David Goldberg's paper
+@uref{https://@/docs.oracle.com/@/cd/@/E19957-01/@/806-3568/@/ncg_goldberg.html,
+What Every Computer Scientist Should Know About Floating-Point Arithmetic}.
+
+Commands that accept floating point numbers as options, operands or
+input use the standard C functions @code{strtod} and @code{strtold} to
+convert from text to floating point numbers.  These floating point
+numbers therefore can use scientific notation like @code{1.0e-34} and
+@code{-10e100}.  Commands that parse floating point also understand
+case-insensitive @code{inf}, @code{infinity}, and @code{NaN}, although
+whether such values are useful depends on the command in question.
+Modern C implementations also accept hexadecimal floating point
+numbers such as @code{-0x.ep-3}, which stands for @minus{}14/16 times
+@math{2^-3}, which equals @minus{}0.109375.  @xref{Parsing of
+Floats,,, libc, The GNU C Library Reference Manual}.
+
+@vindex LC_NUMERIC
+Normally the @env{LC_NUMERIC} locale determines the decimal-point
+character.  However, some commands' descriptions specify that they
+accept numbers in either the current or the C locale; for example,
+they treat @samp{3.14} like @samp{3,14} if the current locale uses
+comma as a decimal point.
+
+@node Signal specifications
+@section Signal specifications
+@cindex signals, specifying
+
+A @var{signal} may be a signal name like @samp{HUP}, or a signal
+number like @samp{1}, or an exit status of a process terminated by the
+signal.  A signal name can be given in canonical form or prefixed by
+@samp{SIG}@.  The case of the letters is ignored.  The following signal names
+and numbers are supported on all POSIX compliant systems:
+
+@table @samp
+@item HUP
+1.  Hangup.
+@item INT
+2.  Terminal interrupt.
+@item QUIT
+3.  Terminal quit.
+@item ABRT
+6.  Process abort.
+@item KILL
+9.  Kill (cannot be caught or ignored).
+@item ALRM
+14.  Alarm Clock.
+@item TERM
+15.  Termination.
+@end table
+
+@noindent
+Other supported signal names have system-dependent corresponding
+numbers.  All systems conforming to POSIX 1003.1-2001 also
+support the following signals:
+
+@table @samp
+@item BUS
+Access to an undefined portion of a memory object.
+@item CHLD
+Child process terminated, stopped, or continued.
+@item CONT
+Continue executing, if stopped.
+@item FPE
+Erroneous arithmetic operation.
+@item ILL
+Illegal Instruction.
+@item PIPE
+Write on a pipe with no one to read it.
+@item SEGV
+Invalid memory reference.
+@item STOP
+Stop executing (cannot be caught or ignored).
+@item TSTP
+Terminal stop.
+@item TTIN
+Background process attempting read.
+@item TTOU
+Background process attempting write.
+@item URG
+High bandwidth data is available at a socket.
+@item USR1
+User-defined signal 1.
+@item USR2
+User-defined signal 2.
+@end table
+
+@noindent
+POSIX 1003.1-2001 systems that support the XSI extension
+also support the following signals:
+
+@table @samp
+@item POLL
+Pollable event.
+@item PROF
+Profiling timer expired.
+@item SYS
+Bad system call.
+@item TRAP
+Trace/breakpoint trap.
+@item VTALRM
+Virtual timer expired.
+@item XCPU
+CPU time limit exceeded.
+@item XFSZ
+File size limit exceeded.
+@end table
+
+@noindent
+POSIX 1003.1-2001 systems that support the XRT extension
+also support at least eight real-time signals called @samp{RTMIN},
+@samp{RTMIN+1}, @dots{}, @samp{RTMAX-1}, @samp{RTMAX}.
+
+@node Random sources
+@section Sources of random data
+
+@cindex random sources
+
+The @command{shuf}, @command{shred}, and @command{sort} commands
+sometimes need random data to do their work.  For example, @samp{sort
+-R} must choose a hash function at random, and it needs random data to
+make this selection.
+
+By default these commands use an internal pseudo-random generator
+initialized by a small amount of entropy, but can be directed to use
+an external source with the @option{--random-source=@var{file}} option.
+An error is reported if @var{file} does not contain enough bytes.
+
+For example, the device file @file{/dev/urandom} could be used as the
+source of random data.  Typically, this device gathers environmental
+noise from device drivers and other sources into an entropy pool, and
+uses the pool to generate random bits.  If the pool is short of data,
+the device reuses the internal pool to produce more bits, using a
+cryptographically secure pseudo-random number generator.  But be aware
+that this device is not designed for bulk random data generation
+and is relatively slow.
+
+@file{/dev/urandom} suffices for most practical uses, but applications
+requiring high-value or long-term protection of private data may
+require an alternate data source like @file{/dev/random} or
+@file{/dev/arandom}.  The set of available sources depends on your
+operating system.
+
+To reproduce the results of an earlier invocation of a command, you
+can save some random data into a file and then use that file as the
+random source in earlier and later invocations of the command.
+@cindex random seed
+Rather than depending on a file, one can generate a reproducible
+arbitrary amount of pseudo-random data given a seed value, using
+for example:
+
+@example
+get_seeded_random()
+@{
+  seed="$1"
+  openssl enc -aes-256-ctr -pass pass:"$seed" -nosalt \
+    </dev/zero 2>/dev/null
+@}
+
+shuf -i1-100 --random-source=<(get_seeded_random 42)
+@end example
+
+@node Target directory
+@section Target directory
+
+@cindex target directory
+
+The @command{cp}, @command{install}, @command{ln}, and @command{mv}
+commands normally treat the last operand specially when it is a
+directory or a symbolic link to a directory.  For example, @samp{cp
+source dest} is equivalent to @samp{cp source dest/source} if
+@file{dest} is a directory.  Sometimes this behavior is not exactly
+what is wanted, so these commands support the following options to
+allow more fine-grained control:
+
+@table @samp
+
+@item -T
+@itemx --no-target-directory
+@opindex --no-target-directory
+@cindex target directory
+@cindex destination directory
+Do not treat the last operand specially when it is a directory or a
+symbolic link to a directory.  This can help avoid race conditions in
+programs that operate in a shared area.  For example, when the command
+@samp{mv /tmp/source /tmp/dest} succeeds, there is no guarantee that
+@file{/tmp/source} was renamed to @file{/tmp/dest}: it could have been
+renamed to @file{/tmp/dest/source} instead, if some other process
+created @file{/tmp/dest} as a directory.  However, if @file{mv
+-T /tmp/source /tmp/dest} succeeds, there is no
+question that @file{/tmp/source} was renamed to @file{/tmp/dest}.
+
+In the opposite situation, where you want the last operand to be
+treated as a directory and want a diagnostic otherwise, you can use
+the @option{--target-directory} (@option{-t}) option.
+
+@item -t @var{directory}
+@itemx --target-directory=@var{directory}
+@opindex --target-directory
+@cindex target directory
+@cindex destination directory
+Use @var{directory} as the directory component of each destination
+file name.
+
+The interface for most programs is that after processing options and a
+finite (possibly zero) number of fixed-position arguments, the remaining
+argument list is either expected to be empty, or is a list of items
+(usually files) that will all be handled identically.  The @command{xargs}
+program is designed to work well with this convention.
+
+The commands in the @command{mv}-family are unusual in that they take
+a variable number of arguments with a special case at the @emph{end}
+(namely, the target directory).  This makes it nontrivial to perform some
+operations, e.g., ``move all files from here to ../d/'', because
+@code{mv * ../d/} might exhaust the argument space, and @code{ls | xargs ...}
+doesn't have a clean way to specify an extra final argument for each
+invocation of the subject command.  (It can be done by going through a
+shell command, but that requires more human labor and brain power than
+it should.)
+
+The @option{--target-directory} (@option{-t}) option allows the @command{cp},
+@command{install}, @command{ln}, and @command{mv} programs to be used
+conveniently with @command{xargs}.  For example, you can move the files
+from the current directory to a sibling directory, @code{d} like this:
+
+@example
+ls | xargs mv -t ../d --
+@end example
+
+However, this doesn't move files whose names begin with @samp{.}.
+If you use the GNU @command{find} program, you can move those
+files too, with this command:
+
+@example
+find . -mindepth 1 -maxdepth 1 \
+  | xargs mv -t ../d
+@end example
+
+But both of the above approaches fail if there are no files in the
+current directory, or if any file has a name containing a blank or
+some other special characters.
+The following example removes those limitations and requires both
+GNU @command{find} and GNU @command{xargs}:
+
+@example
+find . -mindepth 1 -maxdepth 1 -print0 \
+  | xargs --null --no-run-if-empty \
+      mv -t ../d
+@end example
+
+@end table
+
+@noindent
+The @option{--target-directory} (@option{-t}) and
+@option{--no-target-directory} (@option{-T})
+options cannot be combined.
+
+@node Trailing slashes
+@section Trailing slashes
+
+@cindex trailing slashes
+
+Some GNU programs (at least @command{cp} and @command{mv}) allow you to
+remove any trailing slashes from each @var{source} argument before
+operating on it.  The @option{--strip-trailing-slashes} option enables
+this behavior.
+
+This is useful when a @var{source} argument may have a trailing slash and
+@c FIXME: mv's behavior in this case is system-dependent
+specify a symbolic link to a directory.  This scenario is in fact rather
+common because some shells can automatically append a trailing slash when
+performing file name completion on such symbolic links.  Without this
+option, @command{mv}, for example, (via the system's rename function) must
+interpret a trailing slash as a request to dereference the symbolic link
+and so must rename the indirectly referenced @emph{directory} and not
+the symbolic link.  Although it may seem surprising that such behavior
+be the default, it is required by POSIX and is consistent with
+other parts of that standard.
+
+@node Traversing symlinks
+@section Traversing symlinks
+
+@cindex symbolic link to directory, controlling traversal of
+
+The following options modify how @command{chown} and @command{chgrp}
+@c FIXME: note that 'du' has these options, too, but they have slightly
+@c different meaning.
+traverse a hierarchy when the @option{--recursive} (@option{-R})
+option is also specified.
+If more than one of the following options is specified, only the final
+one takes effect.
+These options specify whether processing a symbolic link to a directory
+entails operating on just the symbolic link or on all files in the
+hierarchy rooted at that directory.
+
+These options are independent of @option{--dereference} and
+@option{--no-dereference} (@option{-h}), which control whether to modify
+a symlink or its referent.
+
+@table @samp
+
+@macro choptH
+@item -H
+@opindex -H
+@cindex symbolic link to directory, traverse if on the command line
+If @option{--recursive} (@option{-R}) is specified and
+a command line argument is a symbolic link to a directory, traverse it.
+@end macro
+@choptH
+
+@macro choptL
+@item -L
+@opindex -L
+@cindex symbolic link to directory, traverse each that is encountered
+In a recursive traversal, traverse every symbolic link to a directory
+that is encountered.
+@end macro
+
+@c Append the following warning to -L where appropriate (e.g. chown).
+@macro warnOptDerefWithRec
+
+Combining this dereferencing option with the @option{--recursive} option
+may create a security risk:
+During the traversal of the directory tree, an attacker may be able to
+introduce a symlink to an arbitrary target; when the tool reaches that,
+the operation will be performed on the target of that symlink,
+possibly allowing the attacker to escalate privileges.
+
+@end macro
+
+@choptL
+
+@macro choptP
+@item -P
+@opindex -P
+@cindex symbolic link to directory, never traverse
+Do not traverse any symbolic links.
+This is the default if none of @option{-H}, @option{-L},
+or @option{-P} is specified.
+@end macro
+@choptP
+
+@end table
+
+
+@node Treating / specially
+@section Treating @file{/} specially
+
+Certain commands can operate destructively on entire hierarchies.
+For example, if a user with appropriate privileges mistakenly runs
+@samp{rm -rf / tmp/junk}, that may remove
+all files on the entire system.  Since there are so few
+legitimate uses for such a command,
+GNU @command{rm} normally declines to operate on any directory
+that resolves to @file{/}.  If you really want to try to remove all
+the files on your system, you can use the @option{--no-preserve-root}
+option, but the default behavior, specified by the
+@option{--preserve-root} option, is safer for most purposes.
+
+The commands @command{chgrp}, @command{chmod} and @command{chown}
+can also operate destructively on entire hierarchies, so they too
+support these options.  Although, unlike @command{rm}, they don't
+actually unlink files, these commands are arguably more dangerous
+when operating recursively on @file{/}, since they often work much
+more quickly, and hence damage more files before an alert user can
+interrupt them.  Tradition and POSIX require these commands
+to operate recursively on @file{/}, so they default to
+@option{--no-preserve-root}, but using the @option{--preserve-root}
+option makes them safer for most purposes.  For convenience you can
+specify @option{--preserve-root} in an alias or in a shell function.
+
+Note that the @option{--preserve-root} option also ensures
+that @command{chgrp} and @command{chown} do not modify @file{/}
+even when dereferencing a symlink pointing to @file{/}.
+
+@node Special built-in utilities
+@section Special built-in utilities
+
+Some programs like @command{nice} can invoke other programs; for
+example, the command @samp{nice cat file} invokes the program
+@command{cat} by executing the command @samp{cat file}.  However,
+@dfn{special built-in utilities} like @command{exit} cannot be invoked
+this way.  For example, the command @samp{nice exit} does not have a
+well-defined behavior: it may generate an error message instead of
+exiting.
+
+Here is a list of the special built-in utilities that are standardized
+by POSIX 1003.1-2004.
+
+@quotation
+@t{.@: : break continue eval exec exit export readonly
+return set shift times trap unset}
+@end quotation
+
+For example, because @samp{.}, @samp{:}, and @samp{exec} are special,
+the commands @samp{nice . foo.sh}, @samp{nice :}, and @samp{nice exec
+pwd} do not work as you might expect.
+
+Many shells extend this list.  For example, Bash has several extra
+special built-in utilities like @command{history}, and
+@command{suspend}, and with Bash the command @samp{nice suspend}
+generates an error message instead of suspending.
+
+@node Standards conformance
+@section Standards conformance
+
+@vindex POSIXLY_CORRECT
+In a few cases, the GNU utilities' default behavior is
+incompatible with the POSIX standard.  To suppress these
+incompatibilities, define the @env{POSIXLY_CORRECT} environment
+variable.  Unless you are checking for POSIX conformance, you
+probably do not need to define @env{POSIXLY_CORRECT}.
+
+Newer versions of POSIX are occasionally incompatible with older
+versions.  For example, older versions of POSIX required the
+command @samp{sort +1} to sort based on the second and succeeding
+fields in each input line, but in POSIX 1003.1-2001
+the same command is required to sort the file named @file{+1}, and you
+must instead use the command @samp{sort -k 2} to get the field-based
+sort.  To complicate things further, POSIX 1003.1-2008 allows an
+implementation to have either the old or the new behavior.
+
+@vindex _POSIX2_VERSION
+The GNU utilities normally conform to the version of POSIX
+that is standard for your system.  To cause them to conform to a
+different version of POSIX, define the @env{_POSIX2_VERSION}
+environment variable to a value of the form @var{yyyymm} specifying
+the year and month the standard was adopted.  Three values are currently
+supported for @env{_POSIX2_VERSION}: @samp{199209} stands for
+POSIX 1003.2-1992, @samp{200112} stands for POSIX
+1003.1-2001, and @samp{200809} stands for POSIX 1003.1-2008.
+For example, if you have a POSIX 1003.1-2001 system but are running software
+containing traditional usage like @samp{sort +1} or @samp{tail +10},
+you can work around the compatibility problems by setting
+@samp{_POSIX2_VERSION=200809} in your environment.
+
+@node Basic operations
+@chapter Basic operations
+
+@cindex manipulating files
+
+This chapter describes the commands for advanced file manipulation:
+copying and moving (renaming).
+
+@menu
+* cp invocation::               Copy files.
+* mv invocation::               Move (rename) files.
+@end menu
+
+@node cp invocation
+@section @command{cp}: Copy files and directories
+
+@pindex cp
+@cindex copying files and directories
+@cindex files, copying
+@cindex directories, copying
+
+@command{cp} copies files (or, optionally, directories).  The copy is
+completely independent of the original.  You can either copy one file to
+another, or copy arbitrarily many files to a destination directory.
+Synopses:
+
+@example
+cp [@var{option}]@dots{} [-T] @var{source} @var{dest}
+cp [@var{option}]@dots{} @var{source}@dots{} @var{directory}
+cp [@var{option}]@dots{} -t @var{directory} @var{source}@dots{}
+@end example
+
+@itemize @bullet
+@item
+If two file names are given, @command{cp} copies the first file to the
+second.
+
+@item
+If the @option{--target-directory} (@option{-t}) option is given, or
+failing that if the last file is a directory and the
+@option{--no-target-directory} (@option{-T}) option is not given,
+@command{cp} copies each @var{source} file to the specified directory,
+using the @var{source}s' names.
+@end itemize
+
+Generally, files are written just as they are read.  For exceptions,
+see the @option{--sparse} option below.
+
+By default, @command{cp} does not copy directories.  However, the
+@option{-R}, @option{-a}, and @option{-r} options cause @command{cp} to
+copy recursively by descending into source directories and copying files
+to corresponding destination directories.
+
+When copying from a symbolic link, @command{cp} normally follows the
+link only when not copying recursively or when @option{--link}
+(@option{-l}) is used.  This default can be overridden with the
+@option{--archive} (@option{-a}), @option{-d}, @option{--dereference}
+(@option{-L}), @option{--no-dereference} (@option{-P}), and
+@option{-H} options.  If more than one of these options is specified,
+the last one silently overrides the others.
+
+When copying to a symbolic link, @command{cp} follows the
+link only when it refers to an existing regular file.
+However, when copying to a dangling symbolic link, @command{cp}
+refuses by default, and fails with a diagnostic, since the operation
+is inherently dangerous.  This behavior is contrary to historical
+practice and to POSIX@.
+Set @env{POSIXLY_CORRECT} to make @command{cp} attempt to create
+the target of a dangling destination symlink, in spite of the possible risk.
+Also, when an option like
+@option{--backup} or @option{--link} acts to rename or remove the
+destination before copying, @command{cp} renames or removes the
+symbolic link rather than the file it points to.
+
+By default, @command{cp} copies the contents of special files only
+when not copying recursively.  This default can be overridden with the
+@option{--copy-contents} option.
+
+@cindex self-backups
+@cindex backups, making only
+@command{cp} generally refuses to copy a file onto itself, with the
+following exception: if @option{--force --backup} is specified with
+@var{source} and @var{dest} identical, and referring to a regular file,
+@command{cp} will make a backup file, either regular or numbered, as
+specified in the usual ways (@pxref{Backup options}).  This is useful when
+you simply want to make a backup of an existing file before changing it.
+
+The program accepts the following options.  Also see @ref{Common options}.
+
+@table @samp
+@item -a
+@itemx --archive
+@opindex -a
+@opindex --archive
+Preserve as much as possible of the structure and attributes of the
+original files in the copy (but do not attempt to preserve internal
+directory structure; i.e., @samp{ls -U} may list the entries in a copied
+directory in a different order).
+Try to preserve SELinux security context and extended attributes (xattr),
+but ignore any failure to do that and print no corresponding diagnostic.
+Equivalent to @option{-dR --preserve=all} with the reduced diagnostics.
+
+@item --attributes-only
+@opindex --attributes-only
+Copy only the specified attributes of the source file to the destination.
+If the destination already exists, do not alter its contents.
+See the @option{--preserve} option for controlling which attributes to copy.
+
+@item -b
+@itemx --backup[=@var{method}]
+@opindex -b
+@opindex --backup
+@vindex VERSION_CONTROL
+@cindex backups, making
+@xref{Backup options}.
+Make a backup of each file that would otherwise be overwritten or removed.
+As a special case, @command{cp} makes a backup of @var{source} when the force
+and backup options are given and @var{source} and @var{dest} are the same
+name for an existing, regular file.  One useful application of this
+combination of options is this tiny Bourne shell script:
+
+@example
+#!/bin/sh
+# Usage: backup FILE...
+# Create a GNU-style backup of each listed FILE.
+fail=0
+for i; do
+  cp --backup --force --preserve=all -- "$i" "$i" || fail=1
+done
+exit $fail
+@end example
+
+@item --copy-contents
+@cindex directories, copying recursively
+@cindex copying directories recursively
+@cindex recursively copying directories
+@cindex non-directories, copying as special files
+If copying recursively, copy the contents of any special files (e.g.,
+FIFOs and device files) as if they were regular files.  This means
+trying to read the data in each source file and writing it to the
+destination.  It is usually a mistake to use this option, as it
+normally has undesirable effects on special files like FIFOs and the
+ones typically found in the @file{/dev} directory.  In most cases,
+@code{cp -R --copy-contents} will hang indefinitely trying to read
+from FIFOs and special files like @file{/dev/console}, and it will
+fill up your destination disk if you use it to copy @file{/dev/zero}.
+This option has no effect unless copying recursively, and it does not
+affect the copying of symbolic links.
+
+@item -d
+@opindex -d
+@cindex symbolic links, copying
+@cindex hard links, preserving
+Copy symbolic links as symbolic links rather than copying the files that
+they point to, and preserve hard links between source files in the copies.
+Equivalent to @option{--no-dereference --preserve=links}.
+
+@item -f
+@itemx --force
+@opindex -f
+@opindex --force
+When copying without this option and an existing destination file cannot
+be opened for writing, the copy fails.  However, with @option{--force},
+when a destination file cannot be opened, @command{cp} then
+tries to recreate the file by first removing it.  Note @option{--force}
+alone will not remove dangling symlinks.
+When this option is combined with
+@option{--link} (@option{-l}) or @option{--symbolic-link}
+(@option{-s}), the destination link is replaced, and unless
+@option{--backup} (@option{-b}) is also given there is no brief
+moment when the destination does not exist.  Also see the
+description of @option{--remove-destination}.
+
+This option is independent of the @option{--interactive} or
+@option{-i} option: neither cancels the effect of the other.
+
+This option is ignored when the @option{--no-clobber} or @option{-n} option
+is also used.
+
+@item -g
+@itemx --progress
+@opindex -g
+@opindex --progress
+@cindex progress
+Display a progressbar during the operation
+
+@item -H
+@opindex -H
+If a command line argument specifies a symbolic link, then copy the
+file it points to rather than the symbolic link itself.  However,
+copy (preserving its nature) any symbolic link that is encountered
+via recursive traversal.
+
+@item -i
+@itemx --interactive
+@opindex -i
+@opindex --interactive
+When copying a file other than a directory, prompt whether to
+overwrite an existing destination file.  The @option{-i} option overrides
+a previous @option{-n} option.
+
+@item -l
+@itemx --link
+@opindex -l
+@opindex --link
+Make hard links instead of copies of non-directories.
+
+@item -L
+@itemx --dereference
+@opindex -L
+@opindex --dereference
+Follow symbolic links when copying from them.
+With this option, @command{cp} cannot create a symbolic link.
+For example, a symlink (to regular file) in the source tree will be copied to
+a regular file in the destination tree.
+
+@item -n
+@itemx --no-clobber
+@opindex -n
+@opindex --no-clobber
+Do not overwrite an existing file; silently do nothing instead.
+This option overrides a previous
+@option{-i} option.  This option is mutually exclusive with @option{-b} or
+@option{--backup} option.
+
+@item -P
+@itemx --no-dereference
+@opindex -P
+@opindex --no-dereference
+@cindex symbolic links, copying
+Copy symbolic links as symbolic links rather than copying the files that
+they point to.  This option affects only symbolic links in the source;
+symbolic links in the destination are always followed if possible.
+
+@item -p
+@itemx --preserve[=@var{attribute_list}]
+@opindex -p
+@opindex --preserve
+@cindex file information, preserving, extended attributes, xattr
+Preserve the specified attributes of the original files.
+If specified, the @var{attribute_list} must be a comma-separated list
+of one or more of the following strings:
+
+@table @samp
+@item mode
+Preserve the file mode bits and access control lists.
+@item ownership
+Preserve the owner and group.  On most modern systems,
+only users with appropriate privileges may change the owner of a file,
+and ordinary users
+may preserve the group ownership of a file only if they happen to be
+a member of the desired group.
+@item timestamps
+Preserve the times of last access and last modification, when possible.
+On older systems, it is not possible to preserve these attributes
+when the affected file is a symbolic link.
+However, many systems now provide the @code{utimensat} function,
+which makes it possible even for symbolic links.
+@item links
+Preserve in the destination files
+any links between corresponding source files.
+Note that with @option{-L} or @option{-H}, this option can convert
+symbolic links to hard links.  For example,
+@example
+$ mkdir c; : > a; ln -s a b; cp -aH a b c; ls -i1 c
+74161745 a
+74161745 b
+@end example
+@noindent
+Note the inputs: @file{b} is a symlink to regular file @file{a},
+yet the files in destination directory, @file{c/}, are hard-linked.
+Since @option{-a} implies @option{--no-dereference} it would copy the symlink,
+but the later @option{-H} tells @command{cp} to dereference the command line
+arguments where it then sees two files with the same inode number.
+Then the @option{--preserve=links} option also implied by @option{-a}
+will preserve the perceived hard link.
+
+Here is a similar example that exercises @command{cp}'s @option{-L} option:
+@example
+$ mkdir b c; (cd b; : > a; ln -s a b); cp -aL b c; ls -i1 c/b
+74163295 a
+74163295 b
+@end example
+
+@item context
+Preserve SELinux security context of the file, or fail with full diagnostics.
+@item xattr
+Preserve extended attributes of the file, or fail with full diagnostics.
+If @command{cp} is built without xattr support, ignore this option.
+If SELinux context, ACLs or Capabilities are implemented using xattrs,
+they are preserved implicitly by this option as well, i.e., even without
+specifying @option{--preserve=mode} or @option{--preserve=context}.
+@item all
+Preserve all file attributes.
+Equivalent to specifying all of the above, but with the difference
+that failure to preserve SELinux security context or extended attributes
+does not change @command{cp}'s exit status.  In contrast to @option{-a},
+all but @samp{Operation not supported} warnings are output.
+@end table
+
+Using @option{--preserve} with no @var{attribute_list} is equivalent
+to @option{--preserve=mode,ownership,timestamps}.
+
+In the absence of this option, the permissions of existing destination
+files are unchanged.  Each new file is created with the mode of the
+corresponding source file minus the set-user-ID, set-group-ID, and
+sticky bits as the create mode; the operating system then applies either
+the umask or a default ACL, possibly resulting in a more restrictive
+file mode.
+@xref{File permissions}.
+
+@item --no-preserve=@var{attribute_list}
+@cindex file information, preserving
+Do not preserve the specified attributes.  The @var{attribute_list}
+has the same form as for @option{--preserve}.
+
+@item --parents
+@opindex --parents
+@cindex parent directories and @command{cp}
+Form the name of each destination file by appending to the target
+directory a slash and the specified name of the source file.  The last
+argument given to @command{cp} must be the name of an existing directory.
+For example, the command:
+
+@example
+cp --parents a/b/c existing_dir
+@end example
+
+@noindent
+copies the file @file{a/b/c} to @file{existing_dir/a/b/c}, creating
+any missing intermediate directories.
+
+@item -R
+@itemx -r
+@itemx --recursive
+@opindex -R
+@opindex -r
+@opindex --recursive
+@cindex directories, copying recursively
+@cindex copying directories recursively
+@cindex recursively copying directories
+@cindex non-directories, copying as special files
+Copy directories recursively.  By default, do not follow symbolic
+links in the source unless used together with the @option{--link}
+(@option{-l}) option; see the @option{--archive} (@option{-a}), @option{-d},
+@option{--dereference} (@option{-L}), @option{--no-dereference}
+(@option{-P}), and @option{-H} options.  Special files are copied by
+creating a destination file of the same type as the source; see the
+@option{--copy-contents} option.  It is not portable to use
+@option{-r} to copy symbolic links or special files.  On some
+non-GNU systems, @option{-r} implies the equivalent of
+@option{-L} and @option{--copy-contents} for historical reasons.
+Also, it is not portable to use @option{-R} to copy symbolic links
+unless you also specify @option{-P}, as POSIX allows
+implementations that dereference symbolic links by default.
+
+@item --reflink[=@var{when}]
+@opindex --reflink[=@var{when}]
+@cindex COW
+@cindex clone
+@cindex copy on write
+Perform a lightweight, copy-on-write (COW) copy, if supported by the
+file system.  Once it has succeeded, beware that the source and destination
+files share the same disk data blocks as long as they remain unmodified.
+Thus, if a disk I/O error affects data blocks of one of the files,
+the other suffers the same fate.
+
+The @var{when} value can be one of the following:
+
+@table @samp
+@item always
+The default behavior: if the copy-on-write operation is not supported
+then report the failure for each file and exit with a failure status.
+
+@item auto
+If the copy-on-write operation is not supported then fall back
+to the standard copy behavior.
+
+@item never
+Disable copy-on-write operation and use the standard copy behavior.
+@end table
+
+This option is overridden by the @option{--link}, @option{--symbolic-link}
+and @option{--attributes-only} options, thus allowing it to be used
+to configure the default data copying behavior for @command{cp}.
+For example, with the following alias, @command{cp} will use the
+minimum amount of space supported by the file system.
+
+@example
+alias cp='cp --reflink=auto --sparse=always'
+@end example
+
+@item --remove-destination
+@opindex --remove-destination
+Remove each existing destination file before attempting to open it
+(contrast with @option{-f} above).
+
+@item --sparse=@var{when}
+@opindex --sparse=@var{when}
+@cindex sparse files, copying
+@cindex holes, copying files with
+@findex read @r{system call, and holes}
+A @dfn{sparse file} contains @dfn{holes}---a sequence of zero bytes that
+does not occupy any physical disk blocks; the @samp{read} system call
+reads these as zeros.  This can both save considerable disk space and
+increase speed, since many binary files contain lots of consecutive zero
+bytes.  By default, @command{cp} detects holes in input source files via a crude
+heuristic and makes the corresponding output file sparse as well.
+Only regular files may be sparse.
+
+The @var{when} value can be one of the following:
+
+@table @samp
+@item auto
+The default behavior: if the input file is sparse, attempt to make
+the output file sparse, too.  However, if an output file exists but
+refers to a non-regular file, then do not attempt to make it sparse.
+
+@item always
+For each sufficiently long sequence of zero bytes in the input file,
+attempt to create a corresponding hole in the output file, even if the
+input file does not appear to be sparse.
+This is useful when the input file resides on a file system
+that does not support sparse files
+(for example,  @samp{efs} file systems in SGI IRIX 5.3 and earlier),
+but the output file is on a type of file system that does support them.
+Holes may be created only in regular files, so if the destination file
+is of some other type, @command{cp} does not even try to make it sparse.
+
+@item never
+Never make the output file sparse.
+This is useful in creating a file for use with the @command{mkswap} command,
+since such a file must not have any holes.
+@end table
+
+@optStripTrailingSlashes
+
+@item -s
+@itemx --symbolic-link
+@opindex -s
+@opindex --symbolic-link
+@cindex symbolic links, copying with
+Make symbolic links instead of copies of non-directories.  All source
+file names must be absolute (starting with @samp{/}) unless the
+destination files are in the current directory.  This option merely
+results in an error message on systems that do not support symbolic links.
+
+@optBackupSuffix
+
+@optTargetDirectory
+
+@optNoTargetDirectory
+
+@item -u
+@itemx --update
+@opindex -u
+@opindex --update
+@cindex newer files, copying only
+Do not copy a non-directory that has an existing destination with the
+same or newer modification timestamp.  If timestamps are being preserved,
+the comparison is to the source timestamp truncated to the
+resolutions of the destination file system and of the system calls
+used to update timestamps; this avoids duplicate work if several
+@samp{cp -pu} commands are executed with the same source and destination.
+This option is ignored if the @option{-n} or @option{--no-clobber}
+option is also specified.
+Also, if @option{--preserve=links} is also specified (like with @samp{cp -au}
+for example), that will take precedence; consequently, depending on the
+order that files are processed from the source, newer files in the destination
+may be replaced, to mirror hard links in the source.
+
+@item -v
+@itemx --verbose
+@opindex -v
+@opindex --verbose
+Print the name of each file before copying it.
+
+@item -x
+@itemx --one-file-system
+@opindex -x
+@opindex --one-file-system
+@cindex file systems, omitting copying to different
+Skip subdirectories that are on different file systems from the one that
+the copy started on.
+However, mount point directories @emph{are} copied.
+
+@macro optContext
+@item -Z
+@itemx --context[=@var{context}]
+@opindex -Z
+@opindex --context
+@cindex SELinux, setting/restoring security context
+@cindex security context
+Without a specified @var{context}, adjust the SELinux security context according
+to the system default type for destination files, similarly to the
+@command{restorecon} command.
+The long form of this option with a specific context specified,
+will set the context for newly created files only.
+With a specified context, if both SELinux and SMACK are disabled, a warning is
+issued.
+@end macro
+@optContext
+This option is mutually exclusive with the @option{--preserve=context}
+option, and overrides the @option{--preserve=all} and @option{-a} options.
+
+@end table
+
+@exitstatus
+
+@node mv invocation
+@section @command{mv}: Move (rename) files
+
+@pindex mv
+
+@command{mv} moves or renames files (or directories).  Synopses:
+
+@example
+mv [@var{option}]@dots{} [-T] @var{source} @var{dest}
+mv [@var{option}]@dots{} @var{source}@dots{} @var{directory}
+mv [@var{option}]@dots{} -t @var{directory} @var{source}@dots{}
+@end example
+
+@itemize @bullet
+@item
+If two file names are given, @command{mv} moves the first file to the
+second.
+
+@item
+If the @option{--target-directory} (@option{-t}) option is given, or
+failing that if the last file is a directory and the
+@option{--no-target-directory} (@option{-T}) option is not given,
+@command{mv} moves each @var{source} file to the specified
+directory, using the @var{source}s' names.
+@end itemize
+
+@command{mv} can move any type of file from one file system to another.
+Prior to version @code{4.0} of the fileutils,
+@command{mv} could move only regular files between file systems.
+For example, now @command{mv} can move an entire directory hierarchy
+including special device files from one partition to another.  It first
+uses some of the same code that's used by @code{cp -a} to copy the
+requested directories and files, then (assuming the copy succeeded)
+it removes the originals.  If the copy fails, then the part that was
+copied to the destination partition is removed.  If you were to copy
+three directories from one partition to another and the copy of the first
+directory succeeded, but the second didn't, the first would be left on
+the destination partition and the second and third would be left on the
+original partition.
+
+@cindex extended attributes, xattr
+@command{mv} always tries to copy extended attributes (xattr), which may
+include SELinux context, ACLs or Capabilities.
+Upon failure all but @samp{Operation not supported} warnings are output.
+
+@cindex prompting, and @command{mv}
+If a destination file exists but is normally unwritable, standard input
+is a terminal, and the @option{-f} or @option{--force} option is not given,
+@command{mv} prompts the user for whether to replace the file.  (You might
+own the file, or have write permission on its directory.)  If the
+response is not affirmative, the file is skipped.
+
+@emph{Warning}: Avoid specifying a source name with a trailing slash,
+when it might be a symlink to a directory.
+Otherwise, @command{mv} may do something very surprising, since
+its behavior depends on the underlying rename system call.
+On a system with a modern Linux-based kernel, it fails with
+@code{errno=ENOTDIR}@.
+However, on other systems (at least FreeBSD 6.1 and Solaris 10) it silently
+renames not the symlink but rather the directory referenced by the symlink.
+@xref{Trailing slashes}.
+
+@emph{Note}: @command{mv} will only replace empty directories in the
+destination.  Conflicting populated directories are skipped with a diagnostic.
+
+The program accepts the following options.  Also see @ref{Common options}.
+
+@table @samp
+
+@optBackup
+
+@item -f
+@itemx --force
+@opindex -f
+@opindex --force
+@cindex prompts, omitting
+Do not prompt the user before removing a destination file.
+@macro mvOptsIfn
+If you specify more than one of the @option{-i}, @option{-f}, @option{-n}
+options, only the final one takes effect.
+@end macro
+@mvOptsIfn
+
+@item -g
+@itemx --progress
+@opindex -g
+@opindex --progress
+@cindex progress
+Display a progressbar during the operation
+
+@item -i
+@itemx --interactive
+@opindex -i
+@opindex --interactive
+@cindex prompts, forcing
+Prompt whether to overwrite each existing destination file, regardless
+of its permissions.
+If the response is not affirmative, the file is skipped.
+@mvOptsIfn
+
+@item -n
+@itemx --no-clobber
+@opindex -n
+@opindex --no-clobber
+@cindex prompts, omitting
+Do not overwrite an existing file; silently do nothing instead.
+@mvOptsIfn
+This option is mutually exclusive with @option{-b} or @option{--backup} option.
+
+@item -u
+@itemx --update
+@opindex -u
+@opindex --update
+@cindex newer files, moving only
+Do not move a non-directory that has an existing destination with the
+same or newer modification timestamp.
+If the move is across file system boundaries, the comparison is to the
+source timestamp truncated to the resolutions of the destination file
+system and of the system calls used to update timestamps; this avoids
+duplicate work if several @samp{mv -u} commands are executed with the
+same source and destination.
+This option is ignored if the @option{-n} or @option{--no-clobber}
+option is also specified.
+
+@item -v
+@itemx --verbose
+@opindex -v
+@opindex --verbose
+Print the name of each file before moving it.
+
+@optStripTrailingSlashes
+
+@optBackupSuffix
+
+@optTargetDirectory
+
+@optNoTargetDirectory
+
+@item -Z
+@itemx --context
+@opindex -Z
+@opindex --context
+@cindex SELinux, restoring security context
+@cindex security context
+This option functions similarly to the @command{restorecon} command,
+by adjusting the SELinux security context according
+to the system default type for destination files and each created directory.
+
+@end table
+
+@exitstatus
+
+@node GNU Free Documentation License
+@appendix GNU Free Documentation License
+
+@include fdl.texi
+
+@node Concept index
+@unnumbered Index
+
+@printindex cp
+
+@bye
+
+@c Local variables:
+@c texinfo-column-for-description: 32
+@c End:
