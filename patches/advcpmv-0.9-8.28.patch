@@ -1,0 +1,50 @@
+HEAD detached at v8.28
+You are currently cherry-picking commit 06d19213f.
+  (all conflicts fixed: run "git cherry-pick --continue")
+  (use "git cherry-pick --abort" to cancel the cherry-pick operation)
+
+Changes to be committed:
+
+	modified:   NEWS
+	modified:   doc/coreutils.texi
+	modified:   src/copy.c
+	modified:   src/copy.h
+	modified:   src/cp.c
+	modified:   src/install.c
+	modified:   src/mv.c
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   gnulib (new commits)
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	.patches/
+	0001-cp-mv-add-g-progress-bar-option.patch
+	NEWS.rej
+	advcpmv-0.8-8.30-72-ga5202bd585.patch
+	build-aux/regen-patches.sh
+	doc/coreutils.texi.rej
+	lib/unictype.h
+	lib/unictype/
+	lib/uninorm.h
+	lib/uninorm/
+	multibyte-2016-08-27.patch
+	progs-makefile
+	progs-readme
+	src/basenc
+	src/copy.c.orig
+	src/copy.c.rej
+	src/copy.h.rej
+	src/cp.c.rej
+	src/mbbuffer-test
+	src/multibyte-test
+	src/mv.c.rej
+	src/unorm
+	unorm-2016-08-07.patch.xz
+	xx
+	xx.p
+
